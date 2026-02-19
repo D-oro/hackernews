@@ -18,7 +18,7 @@ http://localhost:8080
 
 
 ## Deploy the API to Google Cloud (Cloud Functions 2nd gen)
-Only authenticated users can deploy, and right now that is restricted to doro.codes@gmail.com
+you need a gcloud account to authenticate and deploy this project 
 
 ```bash
 gcloud auth login

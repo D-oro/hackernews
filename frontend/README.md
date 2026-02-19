@@ -21,7 +21,7 @@ defaults to:
 
 
 ## Run the UI locally using the deployed API:
-This is only relevant if you have access to doro.codes@gmail.com
+you need a gcloud account to authenticate and deploy this project 
 
 **Step 1)**  Authenticate by logging into gcloud 
 
