@@ -1,0 +1,39 @@
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 32% 32% 32%;
+  gap: 2%;
+}
+
+li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.idea-index {
+  font-family: "Fira Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 600;
+  color: #828282;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0;
+  color: var(--muted);
+}
+
+@media (max-width: 1200px) {
+  ul {
+    display: flex;
+    flex-direction: column;
+  }
+}
