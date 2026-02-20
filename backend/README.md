@@ -8,6 +8,9 @@ Install dependencies:
 npm install
 ```
 
+add a .env file and add a Gemini API to it like so:
+GEMINI_API_KEY=ABCDEXAMPLEKEY
+
 ## Run the API locally
 ```bash
 npm run dev
