@@ -20,6 +20,11 @@ defaults to:
  http://localhost:5173
 
 
+## Run tests
+```bash
+npm run test
+```
+
 ## Run the UI locally using the deployed API:
 you need a gcloud account to authenticate and deploy this project 
 

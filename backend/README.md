@@ -17,6 +17,11 @@ now you can reach:
 http://localhost:8080
 
 
+## Run tests
+```bash
+npm run test
+```
+
 ## Deploy the API to Google Cloud (Cloud Functions 2nd gen)
 you need a gcloud account to authenticate and deploy this project 
 

@@ -12,6 +12,7 @@
     "start": "functions-framework --target=helloWorld --source=lib",
     "dev": "npm run build && npm run start",
     "clean": "rm -rf lib",
+    "test": "vitest run",
     "deploy": "npm run build && gcloud functions deploy helloWorld --gen2 --runtime=nodejs22 --region=europe-west2 --entry-point=helloWorld --trigger-http --no-allow-unauthenticated --set-secrets \"GEMINI_API_KEY=projects/testproject-487517/secrets/GEMINI_API_KEY:latest\""
   },
   "dependencies": {
