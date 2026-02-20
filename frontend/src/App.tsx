@@ -4,7 +4,7 @@ import InputForm from "./components/InputForm/InputForm";
 import {TitleIdea} from "./types";
 import TitleIdeas from "./components/TitleIdeas/TitleIdeas";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export default function App() {
   const [titleIdeas, setTitleIdeas] = useState<TitleIdea[]>([]);

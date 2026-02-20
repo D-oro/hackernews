@@ -35,18 +35,27 @@ function makeResponse(): TestResponse {
 }
 
 describe("helloWorld", () => {
+  const allowedOrigin = "http://localhost:5173";
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   it("handles CORS preflight requests", async () => {
-    const req = {method: "OPTIONS", body: {}} as any;
+    const req = {
+      method: "OPTIONS",
+      headers: {origin: allowedOrigin},
+      body: {},
+    } as any;
     const res = makeResponse();
 
     await helloWorld(req, res as any);
 
-    expect(res.set).toHaveBeenCalledWith("Access-Control-Allow-Origin", "*");
+    expect(res.set).toHaveBeenCalledWith(
+      "Access-Control-Allow-Origin",
+      allowedOrigin,
+    );
     expect(res.set).toHaveBeenCalledWith("Access-Control-Allow-Methods", "GET, POST");
     expect(res.set).toHaveBeenCalledWith(
       "Access-Control-Allow-Headers",
@@ -59,12 +68,19 @@ describe("helloWorld", () => {
   });
 
   it("returns 400 when request body url is missing", async () => {
-    const req = {method: "POST", body: {}} as any;
+    const req = {
+      method: "POST",
+      headers: {origin: allowedOrigin},
+      body: {},
+    } as any;
     const res = makeResponse();
 
     await helloWorld(req, res as any);
 
-    expect(res.set).toHaveBeenCalledWith("Access-Control-Allow-Origin", "*");
+    expect(res.set).toHaveBeenCalledWith(
+      "Access-Control-Allow-Origin",
+      allowedOrigin,
+    );
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       error: "Missing 'url' in request body.",
@@ -75,6 +91,7 @@ describe("helloWorld", () => {
   it("extracts content, builds prompt, and returns title ideas", async () => {
     const req = {
       method: "POST",
+      headers: {origin: allowedOrigin},
       body: {url: "https://example.com/article"},
     } as any;
     const res = makeResponse();
@@ -109,7 +126,11 @@ describe("helloWorld", () => {
   });
 
   it("returns 500 when url is invalid", async () => {
-    const req = {method: "POST", body: {url: "not-a-valid-url"}} as any;
+    const req = {
+      method: "POST",
+      headers: {origin: allowedOrigin},
+      body: {url: "not-a-valid-url"},
+    } as any;
     const res = makeResponse();
 
     await helloWorld(req, res as any);
@@ -122,6 +143,7 @@ describe("helloWorld", () => {
   it("returns 500 when dependencies throw", async () => {
     const req = {
       method: "POST",
+      headers: {origin: allowedOrigin},
       body: {url: "https://example.com/article"},
     } as any;
     const res = makeResponse();
@@ -132,5 +154,35 @@ describe("helloWorld", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({error: "Failed to process URL."});
+  });
+
+  it("returns 403 when origin is not allowed", async () => {
+    const req = {
+      method: "POST",
+      headers: {origin: "https://evil.example"},
+      body: {url: "https://example.com/article"},
+    } as any;
+    const res = makeResponse();
+
+    await helloWorld(req, res as any);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith("Forbidden");
+    expect(extractData).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when origin header is missing", async () => {
+    const req = {
+      method: "POST",
+      headers: {},
+      body: {url: "https://example.com/article"},
+    } as any;
+    const res = makeResponse();
+
+    await helloWorld(req, res as any);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith("Forbidden");
+    expect(extractData).not.toHaveBeenCalled();
   });
 });

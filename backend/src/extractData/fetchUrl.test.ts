@@ -5,6 +5,7 @@ type ReaderChunk = Uint8Array | undefined;
 
 function makeReader(chunks: ReaderChunk[]) {
   let i = 0;
+  const cancel = vi.fn(async () => {});
   return {
     read: vi.fn(async () => {
       if (i >= chunks.length) return {done: true as const, value: undefined};
@@ -12,6 +13,7 @@ function makeReader(chunks: ReaderChunk[]) {
       if (!value) return {done: true as const, value: undefined};
       return {done: false as const, value};
     }),
+    cancel,
   };
 }
 
@@ -71,14 +73,17 @@ describe("fetchUrl", () => {
     const html = await fetchUrl(url);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith(url.toString(), {
-      signal: expect.any(AbortSignal),
-      headers: {
-        "User-Agent": "ArticleExtractor/1.0",
-        Accept: "text/html",
-      },
-      redirect: "follow",
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      url.toString(),
+      expect.objectContaining({
+        signal: expect.any(AbortSignal),
+        redirect: "follow",
+        headers: expect.objectContaining({
+          Accept: expect.stringContaining("text/html"),
+          "User-Agent": expect.stringContaining("Mozilla/5.0"),
+        }),
+      }),
+    );
 
     expect(html).toContain("<body>Hello</body>");
   });
@@ -114,7 +119,7 @@ describe("fetchUrl", () => {
     );
   });
 
-  it("throws when response is not ok", async () => {
+  it("returns fallback html when response status is 400+", async () => {
     const url = new URL("https://example.com/404");
 
     vi.stubGlobal(
@@ -129,10 +134,12 @@ describe("fetchUrl", () => {
       ),
     );
 
-    await expect(fetchUrl(url)).rejects.toThrow("Fetch failed: 404");
+    await expect(fetchUrl(url)).resolves.toBe(
+      "<!DOCTYPE html><html><head><title></title></head><body></body></html>",
+    );
   });
 
-  it("throws when content-type is not text/html", async () => {
+  it("returns response even when content-type is not text/html", async () => {
     const url = new URL("https://example.com/json");
 
     vi.stubGlobal(
@@ -147,12 +154,10 @@ describe("fetchUrl", () => {
       ),
     );
 
-    await expect(fetchUrl(url)).rejects.toThrow(
-      "Unexpected content-type: application/json",
-    );
+    await expect(fetchUrl(url)).resolves.toBe('{"ok":true}');
   });
 
-  it("throws when response has no body", async () => {
+  it("returns fallback html when response has no body", async () => {
     const url = new URL("https://example.com/nobody");
 
     vi.stubGlobal(
@@ -167,32 +172,40 @@ describe("fetchUrl", () => {
       ),
     );
 
-    await expect(fetchUrl(url)).rejects.toThrow("No response body");
+    await expect(fetchUrl(url)).resolves.toBe(
+      "<!DOCTYPE html><html><head><title></title></head><body></body></html>",
+    );
   });
 
-  it("throws when response exceeds MAX_BYTES", async () => {
+  it("cancels the reader and returns buffered content when response exceeds MAX_READ_BYTES", async () => {
     const url = new URL("https://example.com/large");
 
-    // 6MB of "<" characters (starts with "<" so it would otherwise pass)
+    // 6MB of "<" characters.
     const big = new Uint8Array(6_000_000);
     big.fill("<".charCodeAt(0));
+    const reader = makeReader([big]);
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        makeResponse({
-          ok: true,
-          status: 200,
-          contentType: "text/html",
-          chunks: [big],
-        }),
-      ),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: vi.fn(() => "text/html"),
+        },
+        body: {
+          getReader: vi.fn(() => reader),
+        },
+      } as unknown as Response),
     );
 
-    await expect(fetchUrl(url)).rejects.toThrow("Response too large");
+    const html = await fetchUrl(url);
+
+    expect(reader.cancel).toHaveBeenCalledTimes(1);
+    expect(html.length).toBe(big.length);
   });
 
-  it("throws when body does not appear to be HTML", async () => {
+  it("returns body even when it does not look like html", async () => {
     const url = new URL("https://example.com/not-html");
 
     vi.stubGlobal(
@@ -207,9 +220,7 @@ describe("fetchUrl", () => {
       ),
     );
 
-    await expect(fetchUrl(url)).rejects.toThrow(
-      "Response does not appear to be HTML",
-    );
+    await expect(fetchUrl(url)).resolves.toBe("   not html at all");
   });
 
   it("aborts after TIMEOUT_MS", async () => {
