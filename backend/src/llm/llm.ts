@@ -7,6 +7,7 @@ const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 export async function generateWithGemini(prompt: string): Promise<string> {
+  // Todo: Add multiple API keys to .env and try different API Key if one cannot be found, is out of date or reached its limits
   if (!GEMINI_API_KEY) {
     throw new Error("Missing GEMINI_API_KEY environment variable");
   }
@@ -30,7 +31,7 @@ export async function generateWithGemini(prompt: string): Promise<string> {
     },
   };
 
-  // toDo: Implement retry logic with exponential backoff for transient errors (e.g., network issues, rate limits)
+  // ToDo: Implement retry logic with exponential backoff for transient errors (e.g., network issues, rate limits)
   const response = await fetch(GEMINI_ENDPOINT, {
     method: "POST",
     headers: {

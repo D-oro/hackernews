@@ -11,6 +11,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:4173",
   "http://localhost:4174",
   "http://localhost:5173",
+  "http://localhost:5174",
 ];
 
 function getCorsOrigin(origin: string | undefined): string | undefined {
