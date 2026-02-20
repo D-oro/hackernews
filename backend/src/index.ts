@@ -4,11 +4,29 @@ import {
   Response,
 } from "@google-cloud/functions-framework";
 import {extractData} from "./extractData/extractData";
-import { generateWithGemini } from "./llm/llm";
-import { buildPrompt } from "./llm/prompts/buildPrompt";
+import {generateWithGemini} from "./llm/llm";
+import {buildPrompt} from "./llm/prompts/buildPrompt";
+
+const ALLOWED_ORIGINS = [
+  "http://localhost:4173",
+  "http://localhost:4174",
+  "http://localhost:5173",
+];
+
+function getCorsOrigin(origin: string | undefined): string | undefined {
+  return origin && ALLOWED_ORIGINS.includes(origin) ? origin : undefined;
+}
 
 export const helloWorld: HttpFunction = async (req: Request, res: Response) => {
-  res.set("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  const corsOrigin = getCorsOrigin(origin);
+
+  if (corsOrigin) {
+    res.set("Access-Control-Allow-Origin", corsOrigin);
+  } else {
+    res.status(403).send("Forbidden");
+    return;
+  }
 
   if (req.method === "OPTIONS") {
     res.set("Access-Control-Allow-Methods", "GET, POST");
