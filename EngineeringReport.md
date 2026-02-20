@@ -25,7 +25,9 @@ The fallback for all is simply the URL itself, since that is often enough to sug
 
 The ScrapedData is then used to build the prompt, formatting the prompt using specific elements of the web page rather than the whole content, to optimise for both performance and security. 
 
-Lastly, a request to Gemini is made with the system prompt and instance prompt, with a predefined return shape, a programmatically ensured limit of 3 title proposals which are then sent to the UI. 
+Lastly, a request to Gemini is made with the system prompt and instance prompt, with a predefined return shape. The API key is stored locally in a .env file, and in google clouds secrets manager and attached during deployment.
+
+In case Gemini returns more than 3 proposals, a function ensures only the first 3 title proposals are used, which are then sent to the UI. 
 
 ## 2) Prompt Design
 
