@@ -54,3 +54,9 @@ Lastly, the request to Gemini (in llm.ts) contains a generationConfig which spec
 - Add retries, better error handling and responses to users for easier debugging, as well as additional LLM types, models and configs.
 - Create a workaround if the Gemini call fails: Could use the function that extracts a "title" from the url and add an iframe for google search with a question "suggest three alternative HN titles +[title]". It's cheating, but at least it would offer an alternative.
 
+
+## 4) Further improvement ideas: Using Hugging Face HN post performance dataset to optimise prompting
+- Download the [Hugging Face Hacker News Title Performance Dataset](https://huggingface.co/datasets/julien040/hacker-news-posts) and update regularly
+- Use an LLM to analyse what titles are performing well currently
+- Update the system prompt accordingly
+- Furthermore: Save created title ideas (with prompt used at the time) in our own dataset and see if any of them show up over time, if yes, then rate that prompt and title higher to build up a list of high performing prompts
