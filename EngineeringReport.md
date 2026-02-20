@@ -13,7 +13,7 @@ The colour scheme, style and layout of the UI is imitating the Hacker News websi
 **Backend:**
 The google cloud functions framework with an HTTPFunction was used to create the API endpoint as this judged to facilitate GCP deployment. 
 TypeScript allows for type safety without the overhead that comes with a full Java Application. 
-The API endpoint reaches a serverless function, which sets up basic CORS headers and handles the preflight OPTIONS request to allow authentication with gcloud.
+The API endpoint reaches a serverless function, which sets up basic CORS headers and checks the received string is indeed a URL.
 The deployed endpoint can only be called by an authenticated user by default, but this can be manually turned off by granting access to all users, while http:/localhost:8080 does not require authentication.
 
 Once the request with the url has been received by the API, the content that the url links to is extracted in multiple steps:
